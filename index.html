@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cris Gourmet · Gestão</title>
+<meta name="theme-color" content="#5E3591">
+<link rel="icon" href="logo.jpg">
+<link rel="apple-touch-icon" href="logo.jpg">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --roxo:#5E3591; --roxo2:#7B4FB3; --lilas:#B9A0DC; --lilas2:#EDE3F8;
+  --creme:#FCEFE4; --creme2:#FFF9F3; --tinta:#33244A; --cinza:#7C7088; --linha:#EADFF0;
+  --verde:#2E8B57; --verde2:#E3F4EA; --vermelho:#C0392B; --vermelho2:#FBE7E4; --amarelo:#B7791F; --amarelo2:#FDF2DC;
+  --raio:16px; --sombra:0 2px 10px rgba(94,53,145,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--creme);color:var(--tinta);font-family:Nunito,system-ui,sans-serif;font-size:15px}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;color:var(--roxo)}
+h1{font-size:1.5rem} h2{font-size:1.25rem} h3{font-size:1.05rem}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--roxo)}
+.topo{position:sticky;top:0;z-index:20;background:var(--creme2);border-bottom:1px solid var(--linha);display:flex;align-items:center;gap:10px;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top))}
+.topo img{width:40px;height:40px;border-radius:50%;border:2px solid var(--lilas)}
+.topo .marca{font-family:Fraunces,serif;font-weight:700;color:var(--roxo);font-size:1.15rem;line-height:1}
+.topo .sub{font-size:.75rem;color:var(--cinza)}
+.topo .sync{margin-left:auto;font-size:.75rem;color:var(--cinza);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:#bbb;display:inline-block}
+.dot.ok{background:var(--verde)} .dot.erro{background:var(--vermelho)} .dot.vai{background:var(--amarelo)}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.abas{position:fixed;bottom:0;left:0;right:0;z-index:30;background:#fff;border-top:1px solid var(--linha);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+.abas a{flex:1;text-align:center;text-decoration:none;color:var(--cinza);font-size:.7rem;font-weight:700;padding:4px 0;border-radius:10px}
+.abas a svg{display:block;margin:0 auto 2px;width:22px;height:22px}
+.abas a.on{color:var(--roxo);background:var(--lilas2)}
+@media(min-width:900px){
+  body{padding-bottom:0;padding-left:210px}
+  .abas{top:0;bottom:0;right:auto;width:210px;flex-direction:column;justify-content:flex-start;gap:4px;padding:84px 12px 12px;border-top:0;border-right:1px solid var(--linha);background:var(--creme2)}
+  .abas a{flex:none;display:flex;align-items:center;gap:10px;font-size:.95rem;padding:10px 12px;text-align:left}
+  .abas a svg{margin:0}
+  .topo{position:fixed;left:0;right:0;z-index:40}
+  main{padding-top:84px}
+}
+.cab{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 14px}
+.cab h1{margin-right:auto}
+.grade{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+.grade2{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:760px){.grade2{grid-template-columns:1fr 1fr}}
+.card{background:#fff;border:1px solid var(--linha);border-radius:var(--raio);padding:14px;box-shadow:var(--sombra)}
+.kpi .rot{font-size:.78rem;color:var(--cinza);font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.kpi .val{font-size:1.35rem;font-weight:800;margin-top:4px}
+.pos{color:var(--verde)} .neg{color:var(--vermelho)}
+.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;background:var(--roxo);color:#fff;display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:.92rem}
+.btn:active{transform:scale(.98)}
+.btn.sec{background:var(--lilas2);color:var(--roxo)}
+.btn.lin{background:#fff;color:var(--roxo);border:1.5px solid var(--lilas)}
+.btn.ver{background:var(--verde)} .btn.perigo{background:var(--vermelho2);color:var(--vermelho)}
+.btn.peq{padding:7px 10px;font-size:.82rem;border-radius:10px}
+.btn.zap{background:#25D366;color:#fff}
+.acoes{display:flex;gap:8px;flex-wrap:wrap}
+.lista{display:flex;flex-direction:column;gap:8px}
+.item{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.item:hover{border-color:var(--lilas)}
+.item .meio{flex:1;min-width:0}
+.item .t{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .s{font-size:.82rem;color:var(--cinza)}
+.item .dir{text-align:right;font-weight:800;white-space:nowrap}
+.tag{display:inline-block;font-size:.72rem;font-weight:800;padding:3px 8px;border-radius:99px;background:var(--lilas2);color:var(--roxo)}
+.tag.orcamento{background:#eee;color:#666}
+.tag.confirmada{background:var(--lilas2);color:var(--roxo)}
+.tag.producao{background:var(--amarelo2);color:var(--amarelo)}
+.tag.pronta{background:#E0F0FB;color:#1F6FA8}
+.tag.entregue{background:var(--verde2);color:var(--verde)}
+.tag.cancelada{background:var(--vermelho2);color:var(--vermelho)}
+.tag.baixo{background:var(--vermelho2);color:var(--vermelho)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.chip{border:1.5px solid var(--linha);background:#fff;border-radius:99px;padding:6px 12px;font-weight:700;font-size:.85rem;white-space:nowrap;cursor:pointer}
+.chip.on{background:var(--roxo);border-color:var(--roxo);color:#fff}
+.vazio{text-align:center;color:var(--cinza);padding:26px 10px;font-size:.92rem}
+.barra{height:6px;background:var(--linha);border-radius:99px;overflow:hidden;margin-top:6px}
+.barra i{display:block;height:100%;background:var(--roxo2);border-radius:99px}
+.barra i.baixo{background:var(--vermelho)}
+.secao{margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+.secao h2{margin-right:auto}
+input,select,textarea{width:100%;border:1.5px solid var(--linha);background:#fff;border-radius:12px;padding:10px 12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--roxo2)}
+label{display:block;font-size:.8rem;font-weight:800;color:var(--cinza);margin:10px 0 4px}
+.linha2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.linha3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}
+.check{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--tinta);font-size:.9rem;margin-top:12px}
+.check input{width:20px;height:20px}
+.fundo{position:fixed;inset:0;background:rgba(40,20,60,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:700px){.fundo{align-items:center}}
+.modal{background:var(--creme2);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+@media(min-width:700px){.modal{border-radius:22px}}
+.modal .mcab{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.modal .mcab h2{margin-right:auto}
+.x{background:none;border:0;font-size:1.6rem;line-height:1;color:var(--cinza);cursor:pointer;padding:4px 8px}
+.rodape{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.itens-ped .ip{display:grid;grid-template-columns:1fr 64px 92px 34px;gap:6px;margin-bottom:6px;align-items:center}
+.itens-ped .ip button,.ficha .fr button{border:0;background:var(--vermelho2);color:var(--vermelho);border-radius:10px;height:40px;cursor:pointer;font-weight:800}
+.ficha .fr{display:grid;grid-template-columns:1fr 90px 34px;gap:6px;margin-bottom:6px;align-items:center}
+.resumo{background:#fff;border:1px solid var(--linha);border-radius:14px;padding:12px;margin-top:12px}
+.resumo div{display:flex;justify-content:space-between;padding:3px 0}
+.resumo .tot{font-weight:800;font-size:1.1rem;border-top:1px dashed var(--linha);margin-top:4px;padding-top:8px}
+.dia{font-size:.8rem;font-weight:800;color:var(--cinza);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.04em}
+.hbar{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:.88rem}
+.hbar .n{width:120px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar .b{flex:1;height:12px;background:var(--linha);border-radius:99px;overflow:hidden}
+.hbar .b i{display:block;height:100%;background:var(--roxo2)}
+.hbar .v{width:96px;text-align:right;font-weight:700}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--tinta);color:#fff;padding:10px 16px;border-radius:12px;z-index:90;font-weight:700;font-size:.9rem;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.mes{display:flex;align-items:center;gap:6px}
+.mes button{border:0;background:var(--lilas2);color:var(--roxo);border-radius:10px;width:34px;height:34px;font-weight:800;cursor:pointer}
+.mes b{display:inline-block;min-width:120px;text-align:center}.mes b::first-letter{text-transform:uppercase}
+.det{font-size:.92rem;line-height:1.55}
+.det b{color:var(--tinta)}
+.aviso{background:var(--amarelo2);color:#7a5414;border-radius:12px;padding:10px 12px;font-size:.88rem;margin-top:10px}
+.mini{font-size:.8rem;color:var(--cinza)}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+td,th{padding:7px 6px;border-bottom:1px solid var(--linha);text-align:left}
+th{color:var(--cinza);font-size:.75rem;text-transform:uppercase}
+td.r,th.r{text-align:right}
+</style>
+</head>
+<body>
+<header class="topo">
+  <img src="logo.jpg" alt="Cris Gourmet">
+  <div><div class="marca">Cris Gourmet</div><div class="sub">Confeitaria artesanal · gestão</div></div>
+  <div class="sync" id="sync" title="Sincronização"><span class="dot"></span><span>neste aparelho</span></div>
+</header>
+
+<nav class="abas" id="abas">
+  <a href="#inicio" data-r="inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Início</a>
+  <a href="#encomendas" data-r="encomendas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M4 11c0-3 3-4 8-4s8 1 8 4"/><path d="M12 7V4M9 4.5l1 1M15 4.5l-1 1"/></svg>Encomendas</a>
+  <a href="#estoque" data-r="estoque"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 7v10l9 4 9-4V7M12 11v10"/></svg>Estoque</a>
+  <a href="#caixa" data-r="caixa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg>Caixa</a>
+  <a href="#cardapio" data-r="cardapio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h11a1 1 0 0 1 1 1v17l-3-2-3 2-3-2-3 2V4a1 1 0 0 1 1-1z"/><path d="M9 8h6M9 12h6"/></svg>Cardápio</a>
+  <a href="#mais" data-r="mais"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Mais</a>
+</nav>
+
+<main id="view"></main>
+
+<script>
+/* ========= dados ========= */
+const CHAVE = 'crisgourmet.v1';
+const STATUS = [['orcamento','Orçamento'],['confirmada','Confirmada'],['producao','Em produção'],['pronta','Pronta'],['entregue','Entregue'],['cancelada','Cancelada']];
+const NOME_STATUS = Object.fromEntries(STATUS);
+const FORMAS = ['Pix','Dinheiro','Cartão de crédito','Cartão de débito','Outro'];
+const CAT_ENT = ['Encomenda','Venda avulsa','Revenda (parceiro)','Outros'];
+const CAT_SAI = ['Matéria-prima','Embalagem','Gás / energia','Entrega / combustível','Equipamento / utensílio','Divulgação','Pró-labore (retirada)','Taxas','Outros'];
+const UNIDADES = ['g','kg','ml','L','un','cx','pct'];
+
+function novoEstado(){
+  return {
+    v:1, atualizado:0,
+    config:{nome:'Cris Gourmet', whats:'553799916481', cidade:'Arcos - MG', syncUrl:'', syncSenha:''},
+    insumos:[], movs:[], produtos:[
+      {id:uid(),nome:'Bolo decorado',cat:'Bolos',preco:0,rend:1,ficha:[],ativo:true},
+      {id:uid(),nome:'Trufa',cat:'Doces',preco:0,rend:1,ficha:[],ativo:true},
+      {id:uid(),nome:'Cone trufado',cat:'Doces',preco:0,rend:1,ficha:[],ativo:true},
+      {id:uid(),nome:'Bombom de uva',cat:'Doces',preco:0,rend:1,ficha:[],ativo:true}
+    ],
+    encomendas:[], caixa:[], clientes:[], seq:0
+  };
+}
+let S;
+try{ S = JSON.parse(localStorage.getItem(CHAVE)) || novoEstado(); }catch(e){ S = novoEstado(); }
+function salvar(msg){
+  S.atualizado = Date.now();
+  localStorage.setItem(CHAVE, JSON.stringify(S));
+  if(msg) toast(msg);
+  agendarEnvio();
+  render();
+}
+
+/* ========= utilidades ========= */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const R = c => ((c||0)/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function centavos(v){ if(typeof v==='number') return Math.round(v*100); v=String(v||'').trim().replace(/[R$\s]/g,''); if(!v) return 0; if(v.includes(',')) v=v.replace(/\./g,'').replace(',','.'); const n=parseFloat(v); return isNaN(n)?0:Math.round(n*100); }
+const paraCampo = c => c ? (c/100).toFixed(2).replace('.',',') : '';
+function num(v){ v=String(v||'').trim().replace(',','.'); const n=parseFloat(v); return isNaN(n)?0:n; }
+const nfmt = n => (Math.round(n*1000)/1000).toLocaleString('pt-BR');
+function hoje(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
+function somaDias(iso,n){ const d=new Date(iso+'T12:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+const mesDe = iso => (iso||'').slice(0,7);
+function dataBR(iso){ if(!iso) return ''; const [a,m,d]=iso.slice(0,10).split('-'); return `${d}/${m}/${a}`; }
+function diaSemana(iso){ return new Date(iso+'T12:00').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'}); }
+function nomeMes(m){ return new Date(m+'-15T12:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'}); }
+function mesMais(m,n){ const d=new Date(m+'-15T12:00'); d.setMonth(d.getMonth()+n); return d.toISOString().slice(0,7); }
+function soDigitos(t){ return String(t||'').replace(/\D/g,''); }
+function zapLink(tel,texto){ let d=soDigitos(tel); if(d && !d.startsWith('55')) d='55'+d; return 'https://wa.me/'+d+(texto?'?text='+encodeURIComponent(texto):''); }
+function toast(t){ const el=document.createElement('div'); el.className='toast'; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(),2200); }
+const porId = (lista,id) => lista.find(x=>x.id===id);
+
+/* ========= regras ========= */
+function totalPed(p){ const itens=(p.itens||[]).reduce((s,i)=>s+Math.round(i.qtd*i.preco),0); return Math.max(0,itens+(p.taxa||0)-(p.desconto||0)); }
+const pagoPed = p => (p.pagamentos||[]).reduce((s,x)=>s+x.valor,0);
+const faltaPed = p => p.status==='cancelada' ? 0 : Math.max(0,totalPed(p)-pagoPed(p));
+function custoUnit(prod){ // custo dos insumos por unidade vendida
+  if(!prod) return 0;
+  const tot=(prod.ficha||[]).reduce((s,f)=>{ const ins=porId(S.insumos,f.insumoId); return s+(ins?ins.custo*f.qtd:0); },0);
+  return tot/(prod.rend||1);
+}
+function lancar(d){ const l=Object.assign({id:uid(),data:hoje(),forma:'Pix',desc:'',ref:''},d); S.caixa.push(l); return l; }
+function baixarEstoque(p, sinal){ // sinal 1 = tira, -1 = devolve
+  (p.itens||[]).forEach(it=>{
+    const prod=porId(S.produtos,it.produtoId); if(!prod) return;
+    (prod.ficha||[]).forEach(f=>{
+      const ins=porId(S.insumos,f.insumoId); if(!ins) return;
+      const q=f.qtd*it.qtd/(prod.rend||1);
+      ins.qtd=Math.round((ins.qtd - sinal*q)*1000)/1000;
+      S.movs.push({id:uid(),data:hoje(),insumoId:ins.id,tipo:sinal>0?'uso':'devolucao',qtd:q,valor:0,obs:`Encomenda #${p.num} · ${it.qtd}× ${prod.nome}`,ref:p.id});
+    });
+  });
+  p.estoqueBaixado = sinal>0;
+}
+function semFicha(p){ return (p.itens||[]).filter(it=>{ const pr=porId(S.produtos,it.produtoId); return !pr || !(pr.ficha||[]).length; }).map(it=>it.nome); }
+function guardarCliente(nome,tel,end){
+  if(!nome) return '';
+  const d=soDigitos(tel);
+  let c=S.clientes.find(c=>(d && soDigitos(c.tel)===d) || c.nome.toLowerCase()===nome.toLowerCase());
+  if(!c){ c={id:uid(),nome,tel,end,aniv:'',obs:''}; S.clientes.push(c); }
+  else { c.nome=nome; if(tel) c.tel=tel; if(end) c.end=end; }
+  return c.id;
+}
+
+/* ========= modal ========= */
+function abrir(html, aoAbrir){
+  fechar();
+  const f=document.createElement('div'); f.className='fundo'; f.id='fundo';
+  f.innerHTML=`<div class="modal">${html}</div>`;
+  f.addEventListener('click',e=>{ if(e.target===f) fechar(); });
+  document.body.appendChild(f);
+  f.querySelectorAll('[data-fechar]').forEach(b=>b.onclick=fechar);
+  if(aoAbrir) aoAbrir(f);
+}
+function fechar(){ const f=$('#fundo'); if(f) f.remove(); }
+const mcab = t => `<div class="mcab"><h2>${t}</h2><button class="x" data-fechar>×</button></div>`;
+const opts = (lista,sel) => lista.map(o=>{ const [v,t]=Array.isArray(o)?o:[o,o]; return `<option value="${esc(v)}" ${v===sel?'selected':''}>${esc(t)}</option>`; }).join('');
+
+/* ========= telas ========= */
+let rota='inicio', filtroEnc='ativas', buscaEnc='', mesCaixa=mesDe(hoje()), mesRel=mesDe(hoje()), buscaEst='';
+const TELAS = {};
+
+TELAS.inicio = () => {
+  const m=mesDe(hoje());
+  const lm=S.caixa.filter(l=>mesDe(l.data)===m);
+  const ent=lm.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+l.valor,0);
+  const sai=lm.filter(l=>l.tipo==='saida').reduce((s,l)=>s+l.valor,0);
+  const ativas=S.encomendas.filter(p=>!['entregue','cancelada'].includes(p.status));
+  const receber=ativas.reduce((s,p)=>s+faltaPed(p),0);
+  const prox=ativas.filter(p=>p.data && p.data<=somaDias(hoje(),7)).sort((a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora));
+  const baixos=S.insumos.filter(i=>i.min>0 && i.qtd<=i.min);
+  const semPreco=S.produtos.filter(p=>p.ativo && !p.preco);
+  return `
+  <div class="cab"><h1>Olá, Cris 💜</h1><span class="mini">${nomeMes(m)}</span></div>
+  <div class="grade">
+    <div class="card kpi"><div class="rot">Entrou no mês</div><div class="val pos">${R(ent)}</div></div>
+    <div class="card kpi"><div class="rot">Saiu no mês</div><div class="val neg">${R(sai)}</div></div>
+    <div class="card kpi"><div class="rot">Saldo do mês</div><div class="val ${ent-sai>=0?'pos':'neg'}">${R(ent-sai)}</div></div>
+    <div class="card kpi"><div class="rot">A receber</div><div class="val">${R(receber)}</div><div class="mini">${ativas.length} encomenda(s) em aberto</div></div>
+  </div>
+  <div class="acoes" style="margin-top:14px">
+    <button class="btn" onclick="formEncomenda()">＋ Encomenda</button>
+    <button class="btn sec" onclick="formLanc('entrada')">＋ Entrada</button>
+    <button class="btn sec" onclick="formLanc('saida')">－ Saída</button>
+    <button class="btn lin" onclick="formCompra()">🛒 Compra de insumo</button>
+  </div>
+  ${semPreco.length?`<div class="aviso">Falta preço em: <b>${semPreco.map(p=>esc(p.nome)).join(', ')}</b>. <a href="#cardapio">Definir no cardápio</a>.</div>`:''}
+  <div class="grade2" style="margin-top:6px">
+    <div>
+      <div class="secao"><h2>Próximos 7 dias</h2><a href="#encomendas" class="mini">ver todas</a></div>
+      <div class="lista">${prox.length?prox.map(itemEnc).join(''):'<div class="card vazio">Nenhuma entrega nos próximos 7 dias.</div>'}</div>
+    </div>
+    <div>
+      <div class="secao"><h2>Estoque baixo</h2><a href="#estoque" class="mini">estoque</a></div>
+      <div class="lista">${baixos.length?baixos.map(itemIns).join(''):'<div class="card vazio">Tudo certo no estoque.</div>'}</div>
+    </div>
+  </div>`;
+};
+
+function itemEnc(p){
+  const f=faltaPed(p);
+  const quando=p.data?`${diaSemana(p.data)}${p.hora?' · '+p.hora:''}`:'sem data';
+  return `<div class="item" onclick="verEncomenda('${p.id}')">
+    <div class="meio"><div class="t">#${p.num} · ${esc(p.cliente||'Sem nome')}</div>
+    <div class="s">${quando} · ${p.modo==='entrega'?'🛵 entrega':'🏠 retirada'} · ${esc((p.itens||[]).map(i=>i.qtd+'× '+i.nome).join(', '))}</div></div>
+    <div class="dir">${R(totalPed(p))}<div><span class="tag ${p.status}">${NOME_STATUS[p.status]}</span></div>${f&&p.status!=='orcamento'?`<div class="mini neg">falta ${R(f)}</div>`:''}</div>
+  </div>`;
+}
+
+TELAS.encomendas = () => {
+  const h=hoje(), sem=somaDias(h,7);
+  let l=S.encomendas.slice();
+  const F={
+    ativas:p=>!['entregue','cancelada'].includes(p.status),
+    hoje:p=>p.data===h && p.status!=='cancelada',
+    semana:p=>p.data>=h && p.data<=sem && p.status!=='cancelada',
+    orcamento:p=>p.status==='orcamento',
+    receber:p=>faltaPed(p)>0 && !['orcamento','cancelada'].includes(p.status),
+    entregues:p=>p.status==='entregue',
+    todas:()=>true
+  };
+  l=l.filter(F[filtroEnc]);
+  if(buscaEnc){ const b=buscaEnc.toLowerCase(); l=l.filter(p=>(p.cliente+' '+p.tel+' '+p.num+' '+(p.itens||[]).map(i=>i.nome).join(' ')).toLowerCase().includes(b)); }
+  const fim=['entregues','todas'].includes(filtroEnc);
+  l.sort((a,b)=>fim?(b.data||'').localeCompare(a.data||''):((a.data||'9')+(a.hora||'')).localeCompare((b.data||'9')+(b.hora||'')));
+  const chips=[['ativas','Em aberto'],['hoje','Hoje'],['semana','7 dias'],['orcamento','Orçamentos'],['receber','A receber'],['entregues','Entregues'],['todas','Todas']];
+  let html='', dia=null;
+  l.forEach(p=>{ if(p.data!==dia){ dia=p.data; html+=`<div class="dia">${p.data?diaSemana(p.data):'Sem data'}</div>`; } html+=itemEnc(p); });
+  return `<div class="cab"><h1>Encomendas</h1><button class="btn" onclick="formEncomenda()">＋ Nova</button></div>
+  <div class="chips">${chips.map(([k,t])=>`<button class="chip ${filtroEnc===k?'on':''}" onclick="filtroEnc='${k}';render()">${t}</button>`).join('')}</div>
+  <input placeholder="Buscar cliente, telefone, produto ou nº" value="${esc(buscaEnc)}" oninput="buscaEnc=this.value;renderLista()" id="buscaEnc">
+  <div class="lista" id="listaEnc" style="margin-top:6px">${html||'<div class="card vazio">Nenhuma encomenda aqui.</div>'}</div>`;
+};
+
+function formEncomenda(id){
+  const p=id?porId(S.encomendas,id):{itens:[{produtoId:'',nome:'',qtd:1,preco:0}],modo:'retirada',status:'confirmada',data:'',hora:'',taxa:0,desconto:0};
+  const prods=S.produtos.filter(x=>x.ativo||p.itens.some(i=>i.produtoId===x.id));
+  const linhaItem=(it)=>`<div class="ip">
+      <select class="ipp"><option value="">— escolha —</option>${prods.map(x=>`<option value="${x.id}" data-preco="${x.preco}" ${x.id===it.produtoId?'selected':''}>${esc(x.nome)}</option>`).join('')}<option value="_livre" ${it.produtoId===''&&it.nome?'selected':''}>Outro (escrever)</option></select>
+      <input class="ipq" type="number" min="0" step="1" value="${it.qtd}" inputmode="numeric">
+      <input class="ipv" placeholder="R$ un." value="${paraCampo(it.preco)}" inputmode="decimal">
+      <button type="button" class="ipx">×</button>
+      <input class="ipn" placeholder="Descreva o item" value="${esc(it.produtoId?'':it.nome)}" style="grid-column:1/-1;${it.produtoId===''&&it.nome?'':'display:none'}">
+    </div>`;
+  abrir(`${mcab(id?'Encomenda #'+p.num:'Nova encomenda')}
+    <datalist id="dlcli">${S.clientes.map(c=>`<option value="${esc(c.nome)}">`).join('')}</datalist>
+    <div class="linha2"><div><label>Cliente</label><input id="fCli" list="dlcli" value="${esc(p.cliente||'')}" autocomplete="off"></div>
+    <div><label>WhatsApp</label><input id="fTel" value="${esc(p.tel||'')}" inputmode="tel" placeholder="(37) 9...."></div></div>
+    <div class="linha2"><div><label>Data da entrega</label><input id="fData" type="date" value="${p.data||''}"></div>
+    <div><label>Horário</label><input id="fHora" type="time" value="${p.hora||''}"></div></div>
+    <div class="linha2"><div><label>Como recebe</label><select id="fModo">${opts([['retirada','Retira'],['entrega','Entrega (delivery)']],p.modo)}</select></div>
+    <div><label>Status</label><select id="fStatus">${opts(STATUS,p.status)}</select></div></div>
+    <div id="boxEnd" style="${p.modo==='entrega'?'':'display:none'}"><label>Endereço</label><input id="fEnd" value="${esc(p.endereco||'')}"></div>
+    <label>Itens <span class="mini">(produto · qtd · preço unitário)</span></label>
+    <div class="itens-ped" id="itens">${p.itens.map(linhaItem).join('')}</div>
+    <button type="button" class="btn sec peq" id="addItem">＋ item</button>
+    <div class="linha2"><div><label>Taxa de entrega (R$)</label><input id="fTaxa" value="${paraCampo(p.taxa)}" inputmode="decimal"></div>
+    <div><label>Desconto (R$)</label><input id="fDesc" value="${paraCampo(p.desconto)}" inputmode="decimal"></div></div>
+    <label>Detalhes (sabor, recheio, tema, cor, escrita no bolo...)</label><textarea id="fObs" rows="3">${esc(p.obs||'')}</textarea>
+    ${id?'':`<div class="linha2"><div><label>Sinal recebido agora (R$)</label><input id="fSinal" inputmode="decimal" placeholder="0,00"></div><div><label>Forma</label><select id="fForma">${opts(FORMAS,'Pix')}</select></div></div>`}
+    <div class="resumo" id="resumo"></div>
+    <div class="rodape"><button class="btn lin" data-fechar>Cancelar</button><button class="btn" id="salvarEnc">Salvar</button></div>`,
+  f=>{
+    const box=f.querySelector('#itens');
+    const ler=()=>[...box.querySelectorAll('.ip')].map(r=>{ const sel=r.querySelector('.ipp'); const pid=sel.value==='_livre'?'':sel.value; const pr=porId(S.produtos,pid);
+      return {produtoId:pid,nome:pr?pr.nome:r.querySelector('.ipn').value.trim(),qtd:num(r.querySelector('.ipq').value),preco:centavos(r.querySelector('.ipv').value)}; }).filter(i=>i.nome && i.qtd>0);
+    const atual=()=>{ const t={itens:ler(),taxa:centavos(f.querySelector('#fTaxa').value),desconto:centavos(f.querySelector('#fDesc').value)};
+      const custo=t.itens.reduce((s,i)=>s+custoUnit(porId(S.produtos,i.produtoId))*i.qtd*100,0);
+      const tot=totalPed(t);
+      f.querySelector('#resumo').innerHTML=`<div><span>Itens</span><span>${R(t.itens.reduce((s,i)=>s+Math.round(i.qtd*i.preco),0))}</span></div>
+        ${t.taxa?`<div><span>Entrega</span><span>${R(t.taxa)}</span></div>`:''}${t.desconto?`<div><span>Desconto</span><span>− ${R(t.desconto)}</span></div>`:''}
+        <div class="tot"><span>Total</span><span>${R(tot)}</span></div>
+        ${custo?`<div class="mini"><span>Custo de ingredientes (estimado)</span><span>${R(custo)} · lucro ${R(tot-t.taxa-custo)}</span></div>`:''}
+        ${id?`<div class="mini"><span>Já pago</span><span>${R(pagoPed(p))}</span></div>`:''}`; };
+    const ligar=r=>{
+      const sel=r.querySelector('.ipp');
+      sel.onchange=()=>{ const o=sel.selectedOptions[0]; r.querySelector('.ipn').style.display=sel.value==='_livre'?'':'none'; if(o && o.dataset.preco>0) r.querySelector('.ipv').value=paraCampo(+o.dataset.preco); atual(); };
+      r.querySelector('.ipx').onclick=()=>{ r.remove(); atual(); };
+      r.querySelectorAll('input').forEach(i=>i.oninput=atual);
+    };
+    box.querySelectorAll('.ip').forEach(ligar);
+    f.querySelector('#addItem').onclick=()=>{ box.insertAdjacentHTML('beforeend',linhaItem({produtoId:'',nome:'',qtd:1,preco:0})); ligar(box.lastElementChild); };
+    f.querySelector('#fModo').onchange=e=>f.querySelector('#boxEnd').style.display=e.target.value==='entrega'?'':'none';
+    ['#fTaxa','#fDesc'].forEach(s=>f.querySelector(s).oninput=atual);
+    f.querySelector('#fCli').onchange=e=>{ const c=S.clientes.find(c=>c.nome===e.target.value); if(c){ if(!f.querySelector('#fTel').value) f.querySelector('#fTel').value=c.tel||''; if(!f.querySelector('#fEnd').value) f.querySelector('#fEnd').value=c.end||''; } };
+    atual();
+    f.querySelector('#salvarEnc').onclick=()=>{
+      const itens=ler();
+      if(!f.querySelector('#fCli').value.trim()) return toast('Coloque o nome da cliente.');
+      if(!itens.length) return toast('Coloque pelo menos um item.');
+      const alvo=id?p:{id:uid(),num:++S.seq,criada:hoje(),pagamentos:[],estoqueBaixado:false};
+      Object.assign(alvo,{cliente:f.querySelector('#fCli').value.trim(),tel:f.querySelector('#fTel').value.trim(),data:f.querySelector('#fData').value,hora:f.querySelector('#fHora').value,
+        modo:f.querySelector('#fModo').value,endereco:f.querySelector('#fEnd').value.trim(),itens,taxa:centavos(f.querySelector('#fTaxa').value),desconto:centavos(f.querySelector('#fDesc').value),obs:f.querySelector('#fObs').value.trim()});
+      alvo.clienteId=guardarCliente(alvo.cliente,alvo.tel,alvo.endereco);
+      const novoStatus=f.querySelector('#fStatus').value;
+      if(!id){ S.encomendas.push(alvo); alvo.status='orcamento';
+        const sinal=centavos(f.querySelector('#fSinal').value);
+        if(sinal>0) registrarPag(alvo,sinal,f.querySelector('#fForma').value,'Sinal'); }
+      fechar();
+      mudarStatus(alvo,novoStatus,true);
+      salvar(id?'Encomenda atualizada.':`Encomenda #${alvo.num} salva.`);
+    };
+  });
+}
+
+function registrarPag(p,valor,forma,rotulo){
+  const l=lancar({tipo:'entrada',valor,cat:'Encomenda',forma,desc:`${rotulo||'Pagamento'} · #${p.num} ${p.cliente}`,ref:p.id});
+  p.pagamentos=p.pagamentos||[]; p.pagamentos.push({id:l.id,data:l.data,valor,forma});
+}
+
+function mudarStatus(p,novo,silencioso){
+  if(p.status===novo) return;
+  p.status=novo;
+  if(['producao','pronta','entregue'].includes(novo) && !p.estoqueBaixado){
+    const falta=semFicha(p);
+    baixarEstoque(p,1);
+    if(falta.length && !silencioso) toast('Sem ficha técnica: '+falta.join(', ')+'. Estoque não baixou desses.');
+  }
+  if(novo==='cancelada' && p.estoqueBaixado){
+    if(confirm('Essa encomenda já tinha baixado o estoque. Devolver os ingredientes pro estoque?')) baixarEstoque(p,-1);
+  }
+  if(novo==='entregue'){ p.entregueEm=hoje(); const f=faltaPed(p);
+    if(f>0) setTimeout(()=>{ if(confirm(`Falta receber ${R(f)} da #${p.num}. Já recebeu? (OK lança no caixa)`)){ registrarPag(p,f,'Pix','Restante'); salvar('Pagamento lançado no caixa.'); } },150); }
+}
+
+function textoPedido(p){
+  const linhas=(p.itens||[]).map(i=>`• ${nfmt(i.qtd)}× ${i.nome} — ${R(Math.round(i.qtd*i.preco))}`).join('\n');
+  const f=faltaPed(p);
+  return `Oi, ${p.cliente.split(' ')[0]}! Aqui é a ${S.config.nome}. 💜\n\nSeu pedido #${p.num}:\n${linhas}${p.taxa?`\n• Entrega — ${R(p.taxa)}`:''}${p.desconto?`\n• Desconto — − ${R(p.desconto)}`:''}\n\nTotal: ${R(totalPed(p))}${pagoPed(p)?`\nPago: ${R(pagoPed(p))}\nFalta: ${R(f)}`:''}\n${p.data?`\n${p.modo==='entrega'?'Entrega':'Retirada'}: ${dataBR(p.data)}${p.hora?' às '+p.hora:''}.`:''}${p.obs?`\nDetalhes: ${p.obs}`:''}\n\nQualquer coisa, é só chamar!`;
+}
+
+function verEncomenda(id){
+  const p=porId(S.encomendas,id); if(!p) return;
+  const f=faltaPed(p), custo=(p.itens||[]).reduce((s,i)=>s+custoUnit(porId(S.produtos,i.produtoId))*i.qtd*100,0);
+  abrir(`${mcab('Encomenda #'+p.num)}
+    <div><span class="tag ${p.status}">${NOME_STATUS[p.status]}</span> ${p.estoqueBaixado?'<span class="tag">estoque baixado</span>':''}</div>
+    <div class="det" style="margin-top:10px">
+      <div><b>${esc(p.cliente)}</b> ${p.tel?`· ${esc(p.tel)}`:''}</div>
+      <div>${p.data?`${p.modo==='entrega'?'🛵 Entrega':'🏠 Retirada'}: <b>${diaSemana(p.data)}${p.hora?' às '+p.hora:''}</b>`:'Sem data marcada'}</div>
+      ${p.modo==='entrega'&&p.endereco?`<div>📍 ${esc(p.endereco)}</div>`:''}
+      ${p.obs?`<div style="white-space:pre-wrap;margin-top:6px">📝 ${esc(p.obs)}</div>`:''}
+    </div>
+    <div class="resumo">${(p.itens||[]).map(i=>`<div><span>${nfmt(i.qtd)}× ${esc(i.nome)}</span><span>${R(Math.round(i.qtd*i.preco))}</span></div>`).join('')}
+      ${p.taxa?`<div><span>Entrega</span><span>${R(p.taxa)}</span></div>`:''}${p.desconto?`<div><span>Desconto</span><span>− ${R(p.desconto)}</span></div>`:''}
+      <div class="tot"><span>Total</span><span>${R(totalPed(p))}</span></div>
+      ${(p.pagamentos||[]).map(x=>`<div class="mini"><span>Pago ${dataBR(x.data)} · ${esc(x.forma)}</span><span>${R(x.valor)}</span></div>`).join('')}
+      <div style="font-weight:800" class="${f?'neg':'pos'}"><span>${f?'Falta receber':'Quitado'}</span><span>${R(f)}</span></div>
+      ${custo?`<div class="mini"><span>Custo de ingredientes (estimado)</span><span>${R(custo)}</span></div>`:''}
+    </div>
+    <label>Mudar status</label>
+    <div class="chips">${STATUS.map(([k,t])=>`<button class="chip ${p.status===k?'on':''}" onclick="trocaStatus('${p.id}','${k}')">${t}</button>`).join('')}</div>
+    <div class="acoes" style="margin-top:6px">
+      ${f?`<button class="btn ver" onclick="formPag('${p.id}')">💰 Receber</button>`:''}
+      ${p.tel?`<a class="btn zap" target="_blank" href="${zapLink(p.tel,textoPedido(p))}">WhatsApp</a>`:''}
+      <button class="btn sec" onclick="copiar('${p.id}')">Copiar resumo</button>
+      <button class="btn lin" onclick="formEncomenda('${p.id}')">Editar</button>
+      <button class="btn lin" onclick="duplicar('${p.id}')">Repetir pedido</button>
+      <button class="btn perigo" onclick="apagarEnc('${p.id}')">Excluir</button>
+    </div>`);
+}
+function trocaStatus(id,st){ const p=porId(S.encomendas,id); mudarStatus(p,st); salvar('Status: '+NOME_STATUS[st]+'.'); verEncomenda(id); }
+function copiar(id){ const t=textoPedido(porId(S.encomendas,id)); navigator.clipboard.writeText(t).then(()=>toast('Resumo copiado.'),()=>prompt('Copie o texto:',t)); }
+function duplicar(id){ const o=porId(S.encomendas,id); const n=JSON.parse(JSON.stringify(o)); Object.assign(n,{id:uid(),num:++S.seq,criada:hoje(),data:'',hora:'',status:'orcamento',pagamentos:[],estoqueBaixado:false,entregueEm:''}); S.encomendas.push(n); salvar(`Encomenda #${n.num} criada.`); formEncomenda(n.id); }
+function apagarEnc(id){
+  const p=porId(S.encomendas,id);
+  if(!confirm(`Excluir a encomenda #${p.num}? ${pagoPed(p)?'Os pagamentos lançados no caixa também saem.':''}`)) return;
+  if(p.estoqueBaixado && confirm('Devolver os ingredientes pro estoque?')) baixarEstoque(p,-1);
+  S.caixa=S.caixa.filter(l=>l.ref!==id);
+  S.encomendas=S.encomendas.filter(x=>x.id!==id); fechar(); salvar('Encomenda excluída.');
+}
+function formPag(id){
+  const p=porId(S.encomendas,id);
+  abrir(`${mcab('Receber · #'+p.num)}
+    <div class="linha2"><div><label>Valor (R$)</label><input id="pv" value="${paraCampo(faltaPed(p))}" inputmode="decimal"></div>
+    <div><label>Forma</label><select id="pf">${opts(FORMAS,'Pix')}</select></div></div>
+    <label>Data</label><input id="pd" type="date" value="${hoje()}">
+    <div class="rodape"><button class="btn lin" onclick="verEncomenda('${id}')">Voltar</button><button class="btn ver" id="ok">Lançar no caixa</button></div>`,
+  f=>f.querySelector('#ok').onclick=()=>{ const v=centavos(f.querySelector('#pv').value); if(!v) return toast('Valor vazio.');
+    registrarPag(p,v,f.querySelector('#pf').value,pagoPed(p)?'Pagamento':'Sinal'); const l=S.caixa[S.caixa.length-1]; l.data=f.querySelector('#pd').value||hoje(); p.pagamentos[p.pagamentos.length-1].data=l.data;
+    salvar('Recebido e lançado no caixa.'); verEncomenda(id); });
+}
+
+/* ---- estoque ---- */
+function itemIns(i){
+  const baixo=i.min>0 && i.qtd<=i.min;
+  const pct=i.min>0?Math.min(100,i.qtd/(i.min*3)*100):100;
+  return `<div class="item" onclick="verInsumo('${i.id}')">
+    <div class="meio"><div class="t">${esc(i.nome)} ${baixo?'<span class="tag baixo">repor</span>':''}</div>
+    <div class="s">${i.custo?`${R(i.custo*100*(i.un==='g'||i.un==='ml'?1000:1))}${i.un==='g'?' / kg':i.un==='ml'?' / L':' / '+i.un}`:'sem custo'}${i.min?` · mínimo ${nfmt(i.min)} ${i.un}`:''}</div>
+    ${i.min?`<div class="barra"><i class="${baixo?'baixo':''}" style="width:${Math.max(3,pct)}%"></i></div>`:''}</div>
+    <div class="dir ${i.qtd<0?'neg':''}">${nfmt(i.qtd)} ${esc(i.un)}</div>
+  </div>`;
+}
+TELAS.estoque = () => {
+  let l=S.insumos.slice().sort((a,b)=>{ const ba=a.min>0&&a.qtd<=a.min, bb=b.min>0&&b.qtd<=b.min; return (bb-ba)||a.nome.localeCompare(b.nome); });
+  if(buscaEst){ const b=buscaEst.toLowerCase(); l=l.filter(i=>i.nome.toLowerCase().includes(b)); }
+  const valor=S.insumos.reduce((s,i)=>s+Math.max(0,i.qtd)*i.custo,0);
+  const baixos=S.insumos.filter(i=>i.min>0&&i.qtd<=i.min).length;
+  return `<div class="cab"><h1>Estoque</h1><button class="btn" onclick="formCompra()">🛒 Compra</button><button class="btn sec" onclick="formUso()">Uso / perda</button><button class="btn lin" onclick="formInsumo()">＋ Insumo</button></div>
+  <div class="grade"><div class="card kpi"><div class="rot">Valor em estoque</div><div class="val">${R(valor*100)}</div></div>
+  <div class="card kpi"><div class="rot">Insumos</div><div class="val">${S.insumos.length}</div></div>
+  <div class="card kpi"><div class="rot">Pra repor</div><div class="val ${baixos?'neg':''}">${baixos}</div></div></div>
+  <input placeholder="Buscar insumo" value="${esc(buscaEst)}" oninput="buscaEst=this.value;renderLista()" id="buscaEst" style="margin-top:14px">
+  <div class="lista" id="listaEst" style="margin-top:8px">${l.length?l.map(itemIns).join(''):'<div class="card vazio">Cadastre os ingredientes e embalagens (leite condensado, chocolate, creme de leite, forminhas, caixas...).<br><br><button class="btn" onclick="formInsumo()">＋ Primeiro insumo</button></div>'}</div>
+  <div class="secao"><h2>Últimas movimentações</h2></div>
+  ${tabelaMovs(S.movs.slice(-15).reverse())}`;
+};
+function tabelaMovs(ms){
+  if(!ms.length) return '<div class="card vazio">Nada ainda.</div>';
+  const T={compra:'Compra',uso:'Uso',perda:'Perda',ajuste:'Ajuste',devolucao:'Devolução'};
+  return `<div class="card" style="padding:6px 10px;overflow-x:auto"><table><tr><th>Data</th><th>Insumo</th><th>Tipo</th><th class="r">Qtd</th><th>Obs.</th></tr>
+  ${ms.map(m=>{ const i=porId(S.insumos,m.insumoId)||{nome:'(apagado)',un:''}; const s=['compra','devolucao'].includes(m.tipo)?'+':m.tipo==='ajuste'?'=':'−';
+    return `<tr><td>${dataBR(m.data)}</td><td>${esc(i.nome)}</td><td>${T[m.tipo]||m.tipo}</td><td class="r">${s} ${nfmt(m.qtd)} ${esc(i.un)}</td><td class="mini">${esc(m.obs||'')}${m.valor?' · '+R(m.valor):''}</td></tr>`; }).join('')}</table></div>`;
+}
+function formInsumo(id){
+  const i=id?porId(S.insumos,id):{nome:'',un:'g',qtd:0,min:0,custo:0};
+  abrir(`${mcab(id?'Editar insumo':'Novo insumo')}
+    <label>Nome</label><input id="iN" value="${esc(i.nome)}" placeholder="Ex.: Leite condensado">
+    <div class="linha2"><div><label>Unidade de controle</label><select id="iU">${opts(UNIDADES,i.un)}</select></div>
+    <div><label>Estoque mínimo</label><input id="iM" value="${i.min||''}" inputmode="decimal" placeholder="avisa quando chegar aqui"></div></div>
+    ${id?'':`<div class="linha2"><div><label>Quanto tem agora</label><input id="iQ" inputmode="decimal" placeholder="0"></div>
+    <div><label>Quanto pagou por isso (R$)</label><input id="iV" inputmode="decimal" placeholder="opcional"></div></div>`}
+    ${id?`<label>Custo por ${esc(i.un)} (R$)</label><input id="iC" value="${i.custo?String(Math.round(i.custo*10000)/10000).replace('.',','):''}" inputmode="decimal"><div class="mini">Atualiza sozinho a cada compra (custo médio).</div>`:''}
+    <div class="mini" style="margin-top:8px">Dica: controle em <b>g</b> ou <b>ml</b> o que entra na receita aos pouquinhos (chocolate, leite condensado), e em <b>un</b> o que é inteiro (ovos, caixas, forminhas).</div>
+    <div class="rodape">${id?`<button class="btn perigo" id="del">Excluir</button>`:''}<button class="btn lin" data-fechar>Cancelar</button><button class="btn" id="ok">Salvar</button></div>`,
+  f=>{
+    f.querySelector('#ok').onclick=()=>{
+      const nome=f.querySelector('#iN').value.trim(); if(!nome) return toast('Coloque o nome.');
+      Object.assign(i,{nome,un:f.querySelector('#iU').value,min:num(f.querySelector('#iM').value)});
+      if(id){ i.custo=num(f.querySelector('#iC').value); }
+      else { i.id=uid(); const q=num(f.querySelector('#iQ').value), v=centavos(f.querySelector('#iV').value); i.qtd=q; i.custo=q&&v?v/100/q:0; S.insumos.push(i);
+        if(q) S.movs.push({id:uid(),data:hoje(),insumoId:i.id,tipo:'ajuste',qtd:q,valor:0,obs:'Estoque inicial'}); }
+      fechar(); salvar('Insumo salvo.');
+    };
+    const d=f.querySelector('#del'); if(d) d.onclick=()=>{ const usa=S.produtos.filter(p=>(p.ficha||[]).some(x=>x.insumoId===id)).map(p=>p.nome);
+      if(!confirm(`Excluir ${i.nome}?${usa.length?' Ele sai da ficha de: '+usa.join(', ')+'.':''}`)) return;
+      S.produtos.forEach(p=>p.ficha=(p.ficha||[]).filter(x=>x.insumoId!==id)); S.insumos=S.insumos.filter(x=>x.id!==id); fechar(); salvar('Insumo excluído.'); };
+  });
+}
+function verInsumo(id){
+  const i=porId(S.insumos,id);
+  const usa=S.produtos.filter(p=>(p.ficha||[]).some(x=>x.insumoId===id));
+  abrir(`${mcab(esc(i.nome))}
+    <div class="grade"><div class="card kpi"><div class="rot">Tem agora</div><div class="val ${i.min>0&&i.qtd<=i.min?'neg':''}">${nfmt(i.qtd)} ${esc(i.un)}</div></div>
+    <div class="card kpi"><div class="rot">Custo por ${esc(i.un)}</div><div class="val">${i.custo?'R$ '+(Math.round(i.custo*10000)/10000).toLocaleString('pt-BR'):'—'}</div></div></div>
+    ${usa.length?`<div class="mini" style="margin-top:8px">Usado em: ${usa.map(p=>esc(p.nome)).join(', ')}</div>`:''}
+    <div class="acoes" style="margin-top:12px"><button class="btn" onclick="formCompra('${id}')">🛒 Compra</button><button class="btn sec" onclick="formUso('${id}')">Uso / perda / ajuste</button><button class="btn lin" onclick="formInsumo('${id}')">Editar</button></div>
+    <div class="secao"><h3>Histórico</h3></div>${tabelaMovs(S.movs.filter(m=>m.insumoId===id).slice(-30).reverse())}`);
+}
+function formCompra(id){
+  if(!S.insumos.length){ toast('Cadastre o insumo primeiro.'); return formInsumo(); }
+  const ord=S.insumos.slice().sort((a,b)=>a.nome.localeCompare(b.nome));
+  abrir(`${mcab('Compra de insumo')}
+    <label>Insumo</label><select id="cI">${ord.map(i=>`<option value="${i.id}" ${i.id===id?'selected':''}>${esc(i.nome)} (${esc(i.un)})</option>`).join('')}</select>
+    <div class="linha2"><div><label>Quantidade comprada <span id="cUn"></span></label><input id="cQ" inputmode="decimal" placeholder="Ex.: 395 x 4 = 1580"></div>
+    <div><label>Valor total pago (R$)</label><input id="cV" inputmode="decimal"></div></div>
+    <div class="linha2"><div><label>Data</label><input id="cD" type="date" value="${hoje()}"></div><div><label>Forma</label><select id="cF">${opts(FORMAS,'Pix')}</select></div></div>
+    <label>Onde comprou (opcional)</label><input id="cO" placeholder="Ex.: Atacadão">
+    <label class="check"><input type="checkbox" id="cCx" checked> Lançar a saída no caixa</label>
+    <div class="mini" id="cInfo" style="margin-top:8px"></div>
+    <div class="rodape"><button class="btn lin" data-fechar>Cancelar</button><button class="btn" id="ok">Salvar compra</button></div>`,
+  f=>{
+    const inf=()=>{ const i=porId(S.insumos,f.querySelector('#cI').value); f.querySelector('#cUn').textContent='('+i.un+')';
+      const q=num(f.querySelector('#cQ').value), v=centavos(f.querySelector('#cV').value);
+      f.querySelector('#cInfo').textContent=q&&v?`Sai a R$ ${(v/100/q).toLocaleString('pt-BR',{maximumFractionDigits:4})} por ${i.un}. Hoje tem ${nfmt(i.qtd)} ${i.un}, fica com ${nfmt(i.qtd+q)} ${i.un}.`:''; };
+    ['#cI','#cQ','#cV'].forEach(s=>f.querySelector(s).addEventListener('input',inf)); f.querySelector('#cI').onchange=inf; inf();
+    f.querySelector('#ok').onclick=()=>{
+      const i=porId(S.insumos,f.querySelector('#cI').value), q=num(f.querySelector('#cQ').value), v=centavos(f.querySelector('#cV').value), d=f.querySelector('#cD').value||hoje(), onde=f.querySelector('#cO').value.trim();
+      if(!q) return toast('Coloque a quantidade.');
+      const base=Math.max(0,i.qtd);
+      if(v) i.custo=(base*i.custo + v/100)/(base+q);
+      i.qtd=Math.round((i.qtd+q)*1000)/1000;
+      S.movs.push({id:uid(),data:d,insumoId:i.id,tipo:'compra',qtd:q,valor:v,obs:onde});
+      if(v && f.querySelector('#cCx').checked) lancar({tipo:'saida',valor:v,cat:'Matéria-prima',forma:f.querySelector('#cF').value,data:d,desc:`${i.nome} (${nfmt(q)} ${i.un})${onde?' · '+onde:''}`});
+      fechar(); salvar('Compra lançada.');
+    };
+  });
+}
+function formUso(id){
+  if(!S.insumos.length) return toast('Cadastre um insumo primeiro.');
+  const ord=S.insumos.slice().sort((a,b)=>a.nome.localeCompare(b.nome));
+  abrir(`${mcab('Uso, perda ou ajuste')}
+    <label>Insumo</label><select id="uI">${ord.map(i=>`<option value="${i.id}" ${i.id===id?'selected':''}>${esc(i.nome)} (${nfmt(i.qtd)} ${esc(i.un)})</option>`).join('')}</select>
+    <div class="linha2"><div><label>Tipo</label><select id="uT">${opts([['uso','Usei (sai)'],['perda','Perdi / venceu (sai)'],['ajuste','Contei: o certo é...']],'uso')}</select></div>
+    <div><label id="uL">Quantidade</label><input id="uQ" inputmode="decimal"></div></div>
+    <label>Observação</label><input id="uO">
+    <div class="rodape"><button class="btn lin" data-fechar>Cancelar</button><button class="btn" id="ok">Salvar</button></div>`,
+  f=>{
+    f.querySelector('#uT').onchange=e=>f.querySelector('#uL').textContent=e.target.value==='ajuste'?'Quantidade que tem de verdade':'Quantidade';
+    f.querySelector('#ok').onclick=()=>{
+      const i=porId(S.insumos,f.querySelector('#uI').value), t=f.querySelector('#uT').value, q=num(f.querySelector('#uQ').value);
+      if(t!=='ajuste' && !q) return toast('Coloque a quantidade.');
+      if(t==='ajuste') i.qtd=q; else i.qtd=Math.round((i.qtd-q)*1000)/1000;
+      S.movs.push({id:uid(),data:hoje(),insumoId:i.id,tipo:t,qtd:q,valor:0,obs:f.querySelector('#uO').value.trim()});
+      fechar(); salvar('Estoque atualizado.');
+    };
+  });
+}
+
+/* ---- cardápio / ficha técnica ---- */
+TELAS.cardapio = () => {
+  const cats=[...new Set(S.produtos.map(p=>p.cat||'Outros'))];
+  return `<div class="cab"><h1>Cardápio e custos</h1><button class="btn" onclick="formProduto()">＋ Produto</button></div>
+  <div class="mini" style="margin:-6px 0 10px">Monte a ficha técnica (receita) de cada produto: o sistema calcula o custo, a margem e baixa o estoque quando a encomenda entra em produção.</div>
+  ${cats.map(c=>`<div class="dia">${esc(c)}</div><div class="lista">${S.produtos.filter(p=>(p.cat||'Outros')===c).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>{
+    const cu=custoUnit(p), m=p.preco?(p.preco-cu*100)/p.preco*100:0;
+    return `<div class="item" onclick="formProduto('${p.id}')" style="${p.ativo?'':'opacity:.55'}"><div class="meio"><div class="t">${esc(p.nome)} ${p.ativo?'':'<span class="tag">pausado</span>'}</div>
+      <div class="s">${(p.ficha||[]).length?`custo ${R(cu*100)} · lucro ${R(p.preco-cu*100)}`:'<span class="neg">sem ficha técnica</span>'}</div></div>
+      <div class="dir">${p.preco?R(p.preco):'<span class="neg">sem preço</span>'}${p.preco&&(p.ficha||[]).length?`<div class="mini ${m<40?'neg':'pos'}">margem ${Math.round(m)}%</div>`:''}</div></div>`; }).join('')}</div>`).join('')}`;
+};
+function formProduto(id){
+  const p=id?porId(S.produtos,id):{nome:'',cat:'Doces',preco:0,rend:1,ficha:[],ativo:true};
+  const ord=S.insumos.slice().sort((a,b)=>a.nome.localeCompare(b.nome));
+  const linha=fr=>`<div class="fr"><select class="fi"><option value="">— insumo —</option>${ord.map(i=>`<option value="${i.id}" ${i.id===fr.insumoId?'selected':''}>${esc(i.nome)} (${esc(i.un)})</option>`).join('')}</select>
+    <input class="fq" inputmode="decimal" value="${fr.qtd||''}" placeholder="qtd"><button type="button" class="fx">×</button></div>`;
+  abrir(`${mcab(id?'Editar produto':'Novo produto')}
+    <label>Nome</label><input id="pN" value="${esc(p.nome)}">
+    <div class="linha2"><div><label>Categoria</label><input id="pC" value="${esc(p.cat||'')}" list="dlcat"><datalist id="dlcat">${[...new Set(S.produtos.map(x=>x.cat))].map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
+    <div><label>Preço de venda (R$)</label><input id="pP" value="${paraCampo(p.preco)}" inputmode="decimal"></div></div>
+    <div class="secao" style="margin-top:16px"><h3>Ficha técnica</h3></div>
+    ${ord.length?'':'<div class="aviso">Cadastre os insumos no Estoque pra montar a ficha.</div>'}
+    <label>A receita abaixo rende quantas unidades?</label><input id="pR" value="${p.rend||1}" inputmode="decimal">
+    <label>Ingredientes e embalagens da receita</label>
+    <div class="ficha" id="ficha">${(p.ficha.length?p.ficha:[{}]).map(linha).join('')}</div>
+    <button type="button" class="btn sec peq" id="addF">＋ ingrediente</button>
+    <div class="resumo" id="pRes"></div>
+    <label class="check"><input type="checkbox" id="pA" ${p.ativo?'checked':''}> Ativo no cardápio</label>
+    <div class="rodape">${id?`<button class="btn perigo" id="del">Excluir</button>`:''}<button class="btn lin" data-fechar>Cancelar</button><button class="btn" id="ok">Salvar</button></div>`,
+  f=>{
+    const box=f.querySelector('#ficha');
+    const ler=()=>[...box.querySelectorAll('.fr')].map(r=>({insumoId:r.querySelector('.fi').value,qtd:num(r.querySelector('.fq').value)})).filter(x=>x.insumoId&&x.qtd>0);
+    const at=()=>{ const t={ficha:ler(),rend:num(f.querySelector('#pR').value)||1}; const cu=custoUnit(t)*100, pr=centavos(f.querySelector('#pP').value);
+      f.querySelector('#pRes').innerHTML=`<div><span>Custo da receita inteira</span><span>${R(cu*t.rend)}</span></div><div><span>Custo por unidade</span><span>${R(cu)}</span></div>
+      ${pr?`<div class="tot"><span>Lucro por unidade</span><span class="${pr-cu>=0?'pos':'neg'}">${R(pr-cu)} (${Math.round((pr-cu)/pr*100)}%)</span></div>`:''}
+      ${cu?`<div class="mini"><span>Preço pra margem de 60% / 70%</span><span>${R(cu/0.4)} / ${R(cu/0.3)}</span></div>`:''}
+      ${t.ficha.some(x=>!(porId(S.insumos,x.insumoId)||{}).custo)?'<div class="mini neg">Algum insumo está sem custo: lance uma compra dele.</div>':''}`; };
+    const lig=r=>{ r.querySelector('.fx').onclick=()=>{ r.remove(); at(); }; r.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',at)); };
+    box.querySelectorAll('.fr').forEach(lig);
+    f.querySelector('#addF').onclick=()=>{ box.insertAdjacentHTML('beforeend',linha({})); lig(box.lastElementChild); };
+    ['#pR','#pP'].forEach(s=>f.querySelector(s).oninput=at); at();
+    f.querySelector('#ok').onclick=()=>{
+      const nome=f.querySelector('#pN').value.trim(); if(!nome) return toast('Coloque o nome.');
+      Object.assign(p,{nome,cat:f.querySelector('#pC').value.trim()||'Outros',preco:centavos(f.querySelector('#pP').value),rend:num(f.querySelector('#pR').value)||1,ficha:ler(),ativo:f.querySelector('#pA').checked});
+      if(!id){ p.id=uid(); S.produtos.push(p); }
+      fechar(); salvar('Produto salvo.');
+    };
+    const d=f.querySelector('#del'); if(d) d.onclick=()=>{ if(!confirm('Excluir '+p.nome+'? (as encomendas antigas continuam com o nome)')) return; S.produtos=S.produtos.filter(x=>x.id!==id); fechar(); salvar('Produto excluído.'); };
+  });
+}
+
+/* ---- caixa ---- */
+TELAS.caixa = () => {
+  const l=S.caixa.filter(x=>mesDe(x.data)===mesCaixa).sort((a,b)=>b.data.localeCompare(a.data)||b.id.localeCompare(a.id));
+  const ent=l.filter(x=>x.tipo==='entrada').reduce((s,x)=>s+x.valor,0), sai=l.filter(x=>x.tipo==='saida').reduce((s,x)=>s+x.valor,0);
+  const geral=S.caixa.reduce((s,x)=>s+(x.tipo==='entrada'?x.valor:-x.valor),0);
+  let html='',dia=null;
+  l.forEach(x=>{ if(x.data!==dia){ dia=x.data; const sd=l.filter(y=>y.data===dia).reduce((s,y)=>s+(y.tipo==='entrada'?y.valor:-y.valor),0); html+=`<div class="dia" style="display:flex;justify-content:space-between"><span>${diaSemana(dia)}</span><span class="${sd>=0?'pos':'neg'}">${R(sd)}</span></div>`; }
+    html+=`<div class="item" onclick="formLanc('${x.tipo}','${x.id}')"><div class="meio"><div class="t">${esc(x.desc||x.cat)}</div><div class="s">${esc(x.cat)} · ${esc(x.forma)}</div></div><div class="dir ${x.tipo==='entrada'?'pos':'neg'}">${x.tipo==='entrada'?'+':'−'} ${R(x.valor)}</div></div>`; });
+  return `<div class="cab"><h1>Caixa</h1><div class="mes"><button onclick="mesCaixa=mesMais(mesCaixa,-1);render()">‹</button><b>${nomeMes(mesCaixa)}</b><button onclick="mesCaixa=mesMais(mesCaixa,1);render()">›</button></div></div>
+  <div class="grade"><div class="card kpi"><div class="rot">Entradas</div><div class="val pos">${R(ent)}</div></div>
+  <div class="card kpi"><div class="rot">Saídas</div><div class="val neg">${R(sai)}</div></div>
+  <div class="card kpi"><div class="rot">Resultado do mês</div><div class="val ${ent-sai>=0?'pos':'neg'}">${R(ent-sai)}</div></div>
+  <div class="card kpi"><div class="rot">Saldo acumulado</div><div class="val">${R(geral)}</div><div class="mini">tudo que entrou − saiu</div></div></div>
+  <div class="acoes" style="margin:14px 0"><button class="btn ver" onclick="formLanc('entrada')">＋ Entrada</button><button class="btn perigo" onclick="formLanc('saida')">－ Saída</button><button class="btn lin" onclick="exportarCSV()">Baixar planilha (CSV)</button></div>
+  <div class="lista">${html||'<div class="card vazio">Nenhum lançamento neste mês.</div>'}</div>`;
+};
+function formLanc(tipo,id){
+  const x=id?porId(S.caixa,id):{tipo,valor:0,cat:tipo==='entrada'?'Venda avulsa':'Matéria-prima',forma:'Pix',data:hoje(),desc:''};
+  const ped=x.ref?porId(S.encomendas,x.ref):null;
+  abrir(`${mcab((id?'Editar ':'Nova ')+(x.tipo==='entrada'?'entrada':'saída'))}
+    <div class="linha2"><div><label>Valor (R$)</label><input id="lV" value="${paraCampo(x.valor)}" inputmode="decimal"></div><div><label>Data</label><input id="lD" type="date" value="${x.data}"></div></div>
+    <div class="linha2"><div><label>Categoria</label><select id="lC">${opts(x.tipo==='entrada'?CAT_ENT:CAT_SAI,x.cat)}</select></div><div><label>Forma</label><select id="lF">${opts(FORMAS,x.forma)}</select></div></div>
+    <label>Descrição</label><input id="lDs" value="${esc(x.desc)}" placeholder="${x.tipo==='entrada'?'Ex.: 20 trufas balcão':'Ex.: conta de luz'}">
+    ${ped?`<div class="mini" style="margin-top:8px">Ligado à <a href="#" onclick="verEncomenda('${ped.id}');return false">encomenda #${ped.num}</a>.</div>`:''}
+    <div class="rodape">${id?`<button class="btn perigo" id="del">Excluir</button>`:''}<button class="btn lin" data-fechar>Cancelar</button><button class="btn" id="ok">Salvar</button></div>`,
+  f=>{
+    f.querySelector('#ok').onclick=()=>{ const v=centavos(f.querySelector('#lV').value); if(!v) return toast('Coloque o valor.');
+      Object.assign(x,{valor:v,data:f.querySelector('#lD').value||hoje(),cat:f.querySelector('#lC').value,forma:f.querySelector('#lF').value,desc:f.querySelector('#lDs').value.trim()});
+      if(!id) lancar(x); else if(ped){ const pg=(ped.pagamentos||[]).find(p=>p.id===id); if(pg) Object.assign(pg,{valor:v,data:x.data,forma:x.forma}); }
+      fechar(); salvar('Lançamento salvo.'); };
+    const d=f.querySelector('#del'); if(d) d.onclick=()=>{ if(!confirm('Excluir este lançamento?')) return; S.caixa=S.caixa.filter(y=>y.id!==id);
+      if(ped) ped.pagamentos=(ped.pagamentos||[]).filter(p=>p.id!==id); fechar(); salvar('Lançamento excluído.'); };
+  });
+}
+function exportarCSV(){
+  const l=S.caixa.filter(x=>mesDe(x.data)===mesCaixa).sort((a,b)=>a.data.localeCompare(b.data));
+  const c=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const csv='﻿Data;Tipo;Categoria;Forma;Descrição;Valor\n'+l.map(x=>[dataBR(x.data),x.tipo==='entrada'?'Entrada':'Saída',x.cat,x.forma,x.desc,((x.tipo==='entrada'?1:-1)*x.valor/100).toFixed(2).replace('.',',')].map(c).join(';')).join('\n');
+  baixar(new Blob([csv],{type:'text/csv'}),`caixa-crisgourmet-${mesCaixa}.csv`);
+}
+function baixar(blob,nome){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nome; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
+
+/* ---- mais: clientes, relatórios, ajustes ---- */
+TELAS.mais = () => `<div class="cab"><h1>Mais</h1></div>
+  <div class="lista">
+    <a class="item" href="#clientes" style="text-decoration:none;color:inherit"><div class="meio"><div class="t">👥 Clientes</div><div class="s">quem compra, quanto e quando</div></div><div class="dir">${S.clientes.length}</div></a>
+    <a class="item" href="#relatorios" style="text-decoration:none;color:inherit"><div class="meio"><div class="t">📊 Relatório do mês</div><div class="s">faturamento, gastos, lucro e o que mais vende</div></div></a>
+    <a class="item" href="#ajustes" style="text-decoration:none;color:inherit"><div class="meio"><div class="t">⚙️ Ajustes e backup</div><div class="s">dados da loja, cópia de segurança e sincronização</div></div></a>
+  </div>`;
+
+TELAS.clientes = () => {
+  const dados=S.clientes.map(c=>{ const ps=S.encomendas.filter(p=>p.clienteId===c.id && p.status!=='cancelada'); return {c,n:ps.length,tot:ps.reduce((s,p)=>s+totalPed(p),0),ult:ps.map(p=>p.data||p.criada).sort().pop()||''}; }).sort((a,b)=>b.tot-a.tot);
+  return `<div class="cab"><h1>Clientes</h1><button class="btn" onclick="formCliente()">＋ Cliente</button></div>
+  <div class="lista">${dados.length?dados.map(d=>`<div class="item" onclick="formCliente('${d.c.id}')"><div class="meio"><div class="t">${esc(d.c.nome)}</div><div class="s">${esc(d.c.tel||'sem telefone')} · ${d.n} pedido(s)${d.ult?' · último '+dataBR(d.ult):''}${d.c.aniv?' · 🎂 '+d.c.aniv.split('-').reverse().slice(0,2).join('/'):''}</div></div><div class="dir">${R(d.tot)}</div></div>`).join(''):'<div class="card vazio">As clientes entram aqui sozinhas quando você salva uma encomenda.</div>'}</div>`;
+};
+function formCliente(id){
+  const c=id?porId(S.clientes,id):{nome:'',tel:'',end:'',aniv:'',obs:''};
+  const ps=id?S.encomendas.filter(p=>p.clienteId===id).sort((a,b)=>(b.data||'').localeCompare(a.data||'')):[];
+  abrir(`${mcab(id?esc(c.nome):'Nova cliente')}
+    <div class="linha2"><div><label>Nome</label><input id="cN" value="${esc(c.nome)}"></div><div><label>WhatsApp</label><input id="cT" value="${esc(c.tel)}" inputmode="tel"></div></div>
+    <label>Endereço</label><input id="cE" value="${esc(c.end)}">
+    <div class="linha2"><div><label>Aniversário</label><input id="cA" type="date" value="${c.aniv||''}"></div><div></div></div>
+    <label>Observações (gosta de quê, alergia...)</label><textarea id="cO" rows="2">${esc(c.obs)}</textarea>
+    ${ps.length?`<div class="secao"><h3>Pedidos</h3></div><div class="lista">${ps.map(itemEnc).join('')}</div>`:''}
+    <div class="rodape">${id?`<button class="btn perigo" id="del">Excluir</button>`:''}${c.tel?`<a class="btn zap" target="_blank" href="${zapLink(c.tel)}">WhatsApp</a>`:''}${id?`<button class="btn sec" onclick="novaPara('${id}')">＋ Encomenda</button>`:''}<button class="btn" id="ok">Salvar</button></div>`,
+  f=>{
+    f.querySelector('#ok').onclick=()=>{ const nome=f.querySelector('#cN').value.trim(); if(!nome) return toast('Coloque o nome.');
+      Object.assign(c,{nome,tel:f.querySelector('#cT').value.trim(),end:f.querySelector('#cE').value.trim(),aniv:f.querySelector('#cA').value,obs:f.querySelector('#cO').value.trim()});
+      if(!id){ c.id=uid(); S.clientes.push(c); } else S.encomendas.filter(p=>p.clienteId===id).forEach(p=>p.cliente=nome);
+      fechar(); salvar('Cliente salva.'); };
+    const d=f.querySelector('#del'); if(d) d.onclick=()=>{ if(!confirm('Excluir '+c.nome+'? Os pedidos dela continuam.')) return; S.clientes=S.clientes.filter(x=>x.id!==id); fechar(); salvar('Cliente excluída.'); };
+  });
+}
+function novaPara(cid){ const c=porId(S.clientes,cid); formEncomenda(); const f=$('#fundo'); f.querySelector('#fCli').value=c.nome; f.querySelector('#fTel').value=c.tel||''; f.querySelector('#fEnd').value=c.end||''; }
+
+TELAS.relatorios = () => {
+  const m=mesRel, l=S.caixa.filter(x=>mesDe(x.data)===m);
+  const ent=l.filter(x=>x.tipo==='entrada').reduce((s,x)=>s+x.valor,0), sai=l.filter(x=>x.tipo==='saida').reduce((s,x)=>s+x.valor,0);
+  const porCat={}; l.filter(x=>x.tipo==='saida').forEach(x=>porCat[x.cat]=(porCat[x.cat]||0)+x.valor);
+  const cats=Object.entries(porCat).sort((a,b)=>b[1]-a[1]), maxC=cats.length?cats[0][1]:1;
+  const peds=S.encomendas.filter(p=>p.status!=='cancelada' && p.status!=='orcamento' && mesDe(p.data||p.criada)===m);
+  const fat=peds.reduce((s,p)=>s+totalPed(p),0);
+  const prod={}; peds.forEach(p=>(p.itens||[]).forEach(i=>{ const k=i.nome; prod[k]=prod[k]||{q:0,v:0,c:0}; prod[k].q+=i.qtd; prod[k].v+=Math.round(i.qtd*i.preco); prod[k].c+=custoUnit(porId(S.produtos,i.produtoId))*i.qtd*100; }));
+  const tops=Object.entries(prod).sort((a,b)=>b[1].v-a[1].v), maxP=tops.length?tops[0][1].v:1;
+  const orc=S.encomendas.filter(p=>mesDe(p.criada)===m), conv=orc.length?Math.round(orc.filter(p=>!['orcamento','cancelada'].includes(p.status)).length/orc.length*100):0;
+  return `<div class="cab"><h1>Relatório</h1><div class="mes"><button onclick="mesRel=mesMais(mesRel,-1);render()">‹</button><b>${nomeMes(m)}</b><button onclick="mesRel=mesMais(mesRel,1);render()">›</button></div></div>
+  <div class="grade">
+    <div class="card kpi"><div class="rot">Recebido</div><div class="val pos">${R(ent)}</div></div>
+    <div class="card kpi"><div class="rot">Gasto</div><div class="val neg">${R(sai)}</div></div>
+    <div class="card kpi"><div class="rot">Lucro do caixa</div><div class="val ${ent-sai>=0?'pos':'neg'}">${R(ent-sai)}</div><div class="mini">${ent?Math.round((ent-sai)/ent*100)+'% do recebido':''}</div></div>
+    <div class="card kpi"><div class="rot">Encomendas</div><div class="val">${peds.length}</div><div class="mini">vendido ${R(fat)}</div></div>
+    <div class="card kpi"><div class="rot">Ticket médio</div><div class="val">${R(peds.length?fat/peds.length:0)}</div></div>
+    <div class="card kpi"><div class="rot">Orçamento → pedido</div><div class="val">${conv}%</div><div class="mini">${orc.length} criado(s) no mês</div></div>
+  </div>
+  <div class="grade2" style="margin-top:6px">
+    <div><div class="secao"><h2>O que mais vende</h2></div><div class="card">${tops.length?tops.map(([n,d])=>`<div class="hbar"><span class="n">${esc(n)}</span><span class="b"><i style="width:${d.v/maxP*100}%"></i></span><span class="v">${R(d.v)}</span></div><div class="mini" style="margin:-4px 0 8px 128px">${nfmt(d.q)} un.${d.c?' · lucro bruto '+R(d.v-d.c):''}</div>`).join(''):'<div class="vazio">Sem encomendas no mês.</div>'}</div></div>
+    <div><div class="secao"><h2>Pra onde foi o dinheiro</h2></div><div class="card">${cats.length?cats.map(([n,v])=>`<div class="hbar"><span class="n">${esc(n)}</span><span class="b"><i style="width:${v/maxC*100}%;background:var(--lilas)"></i></span><span class="v">${R(v)}</span></div>`).join(''):'<div class="vazio">Sem saídas no mês.</div>'}</div></div>
+  </div>`;
+};
+
+TELAS.ajustes = () => `<div class="cab"><h1>Ajustes</h1></div>
+  <div class="card"><h3>Loja</h3>
+    <div class="linha2"><div><label>Nome</label><input id="aN" value="${esc(S.config.nome)}"></div><div><label>WhatsApp</label><input id="aW" value="${esc(S.config.whats)}"></div></div>
+    <div class="rodape"><button class="btn" onclick="S.config.nome=$('#aN').value.trim()||'Cris Gourmet';S.config.whats=$('#aW').value.trim();salvar('Salvo.')">Salvar</button></div></div>
+  <div class="card" style="margin-top:12px"><h3>Cópia de segurança</h3>
+    <div class="mini" style="margin-top:6px">Os dados ficam guardados neste aparelho. Baixe uma cópia de vez em quando (ou ligue a sincronização abaixo) pra não perder nada se trocar de celular.</div>
+    <div class="acoes" style="margin-top:10px"><button class="btn" onclick="baixarBackup()">Baixar cópia</button><label class="btn sec" style="margin:0">Restaurar cópia<input type="file" accept=".json" hidden onchange="restaurar(this.files[0])"></label></div></div>
+  <div class="card" style="margin-top:12px"><h3>Sincronizar entre aparelhos</h3>
+    <div class="mini" style="margin-top:6px">Com a sincronização ligada, celular e computador veem os mesmos dados (salvos no Google Drive da loja).</div>
+    <label>Endereço do servidor (Apps Script)</label><input id="sU" value="${esc(S.config.syncUrl)}" placeholder="https://script.google.com/macros/s/.../exec">
+    <label>Senha</label><input id="sS" type="password" value="${esc(S.config.syncSenha)}">
+    <div class="rodape"><button class="btn lin" onclick="S.config.syncUrl='';S.config.syncSenha='';salvar('Sincronização desligada.')">Desligar</button><button class="btn" onclick="ligarSync()">Ligar e testar</button></div></div>
+  <div class="card" style="margin-top:12px"><h3>Começar do zero</h3><div class="mini" style="margin-top:6px">Apaga tudo deste aparelho. Baixe uma cópia antes.</div>
+    <div class="rodape"><button class="btn perigo" onclick="if(confirm('Apagar TODOS os dados deste aparelho?')&&confirm('Tem certeza mesmo?')){const c=S.config;S=novoEstado();S.config=c;salvar('Tudo apagado.')}">Apagar tudo</button></div></div>
+  <div class="mini" style="text-align:center;margin:20px 0">Cris Gourmet · sistema de gestão</div>`;
+
+function baixarBackup(){ baixar(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),`backup-crisgourmet-${hoje()}.json`); }
+function restaurar(file){ if(!file) return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); if(!d.encomendas||!d.insumos) throw 0; if(!confirm('Trocar os dados deste aparelho pela cópia?')) return; const c=S.config; S=d; if(!S.config.syncUrl) { S.config.syncUrl=c.syncUrl; S.config.syncSenha=c.syncSenha; } salvar('Cópia restaurada.'); }catch(e){ toast('Arquivo inválido.'); } }; r.readAsText(file); }
+
+/* ========= sincronização (Apps Script + Drive) ========= */
+let timerEnvio=null, enviando=false;
+function statusSync(cls,txt){ const s=$('#sync'); s.querySelector('.dot').className='dot '+(cls||''); s.querySelector('span:last-child').textContent=txt; }
+async function api(acao,extra){
+  const r=await fetch(S.config.syncUrl,{method:'POST',body:JSON.stringify(Object.assign({acao,senha:S.config.syncSenha},extra||{}))});
+  const j=await r.json(); if(!j.ok) throw new Error(j.erro||'erro'); return j.data;
+}
+function agendarEnvio(){ if(!S.config.syncUrl) return; statusSync('vai','salvando…'); clearTimeout(timerEnvio); timerEnvio=setTimeout(enviar,1200); }
+async function enviar(){
+  if(enviando){ agendarEnvio(); return; } enviando=true;
+  try{ const r=await api('salvar',{dados:JSON.stringify(S),atualizado:S.atualizado}); if(r&&r.ignorado){ enviando=false; return puxar(); } statusSync('ok','sincronizado'); }
+  catch(e){ statusSync('erro','sem conexão'); }
+  enviando=false;
+}
+async function puxar(){
+  if(!S.config.syncUrl) return;
+  try{ statusSync('vai','atualizando…'); const d=await api('ler');
+    if(d && d.atualizado > S.atualizado){ const c={syncUrl:S.config.syncUrl,syncSenha:S.config.syncSenha}; S=JSON.parse(d.dados); Object.assign(S.config,c); localStorage.setItem(CHAVE,JSON.stringify(S)); render(); }
+    else if(!d || d.atualizado < S.atualizado) await enviar();
+    statusSync('ok','sincronizado');
+  }catch(e){ statusSync('erro','sem conexão'); }
+}
+async function ligarSync(){
+  S.config.syncUrl=$('#sU').value.trim(); S.config.syncSenha=$('#sS').value;
+  if(!S.config.syncUrl) return toast('Cole o endereço.');
+  try{ await api('ler'); localStorage.setItem(CHAVE,JSON.stringify(S)); toast('Conectado!'); await puxar(); render(); }
+  catch(e){ toast(e.message==='senha'?'Senha errada.':'Não conectou: confira o endereço.'); statusSync('erro','sem conexão'); }
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) puxar(); });
+
+/* ========= roteador ========= */
+function render(){
+  const y=window.scrollY;
+  const fn=TELAS[rota]||TELAS.inicio;
+  $('#view').innerHTML=fn();
+  const aba=['clientes','relatorios','ajustes'].includes(rota)?'mais':rota;
+  document.querySelectorAll('#abas a').forEach(a=>a.classList.toggle('on',a.dataset.r===aba));
+  window.scrollTo(0,y);
+}
+function renderLista(){ // re-render sem perder o foco da busca
+  const id=document.activeElement&&document.activeElement.id, pos=document.activeElement&&document.activeElement.selectionStart;
+  render(); if(id){ const el=document.getElementById(id); if(el){ el.focus(); try{el.setSelectionRange(pos,pos);}catch(e){} } }
+}
+function irPara(){ rota=(location.hash||'#inicio').slice(1); fechar(); render(); window.scrollTo(0,0); }
+window.addEventListener('hashchange',irPara);
+irPara();
+if(S.config.syncUrl) puxar();
+</script>
+</body>
+</html>
