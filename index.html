@@ -8,10 +8,11 @@
 <link rel="icon" href="logo.jpg">
 <link rel="apple-touch-icon" href="logo.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
 <style>
+@font-face{font-family:Fraunces;font-style:normal;font-weight:500 700;font-display:swap;src:url(fonts/fraunces.woff2) format('woff2')}
+@font-face{font-family:Nunito;font-style:normal;font-weight:400 800;font-display:swap;src:url(fonts/nunito.woff2) format('woff2')}
 :root{
   --roxo:#5E3591; --roxo2:#7B4FB3; --lilas:#B9A0DC; --lilas2:#EDE3F8;
   --creme:#FCEFE4; --creme2:#FFF9F3; --tinta:#33244A; --cinza:#7C7088; --linha:#EADFF0;
@@ -125,6 +126,17 @@ table{width:100%;border-collapse:collapse;font-size:.88rem}
 td,th{padding:7px 6px;border-bottom:1px solid var(--linha);text-align:left}
 th{color:var(--cinza);font-size:.75rem;text-transform:uppercase}
 td.r,th.r{text-align:right}
+.trava{position:fixed;inset:0;z-index:100;background:var(--creme);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.trava img{width:84px;height:84px;border-radius:50%;border:3px solid var(--lilas);margin-bottom:10px}
+.trava .pontos{display:flex;gap:12px;margin:18px 0 6px;height:16px}
+.trava .pontos i{width:14px;height:14px;border-radius:50%;border:2px solid var(--roxo)}
+.trava .pontos i.on{background:var(--roxo)}
+.trava .msg{min-height:20px;font-size:.88rem;font-weight:700;color:var(--vermelho)}
+.teclado{display:grid;grid-template-columns:repeat(3,72px);gap:12px;margin-top:10px}
+.teclado button{height:72px;border-radius:50%;border:0;background:#fff;box-shadow:var(--sombra);font-size:1.5rem;font-weight:800;color:var(--roxo);cursor:pointer}
+.teclado button:active{background:var(--lilas2)}
+.teclado button.v{background:none;box-shadow:none;font-size:.85rem}
+body.travado main,body.travado .abas,body.travado .topo{visibility:hidden}
 </style>
 </head>
 <body>
@@ -273,6 +285,7 @@ TELAS.inicio = () => {
     <button class="btn sec" onclick="formLanc('saida')">－ Saída</button>
     <button class="btn lin" onclick="formCompra()">🛒 Compra de insumo</button>
   </div>
+  ${S.config.pin?'':`<div class="aviso">🔒 O sistema está sem PIN. <a href="#ajustes">Criar um PIN</a> pra ninguém abrir no seu aparelho.</div>`}
   ${semPreco.length?`<div class="aviso">Falta preço em: <b>${semPreco.map(p=>esc(p.nome)).join(', ')}</b>. <a href="#cardapio">Definir no cardápio</a>.</div>`:''}
   <div class="grade2" style="margin-top:6px">
     <div>
@@ -741,6 +754,9 @@ TELAS.ajustes = () => `<div class="cab"><h1>Ajustes</h1></div>
   <div class="card"><h3>Loja</h3>
     <div class="linha2"><div><label>Nome</label><input id="aN" value="${esc(S.config.nome)}"></div><div><label>WhatsApp</label><input id="aW" value="${esc(S.config.whats)}"></div></div>
     <div class="rodape"><button class="btn" onclick="S.config.nome=$('#aN').value.trim()||'Cris Gourmet';S.config.whats=$('#aW').value.trim();salvar('Salvo.')">Salvar</button></div></div>
+  <div class="card" style="margin-top:12px"><h3>PIN de acesso</h3>
+    <div class="mini" style="margin-top:6px">${S.config.pin?`Ligado. O sistema pede o PIN ao abrir, depois de ${TRAVA_APOS_MIN} min fora e depois de 10 min parado.`:'Desligado: quem pegar o aparelho consegue abrir o sistema.'}</div>
+    <div class="rodape">${S.config.pin?'<button class="btn lin" onclick="tirarPin()">Tirar PIN</button><button class="btn sec" onclick="criarPin()">Trocar PIN</button><button class="btn" onclick="travar()">Bloquear agora</button>':'<button class="btn" onclick="criarPin()">Criar PIN</button>'}</div></div>
   <div class="card" style="margin-top:12px"><h3>Cópia de segurança</h3>
     <div class="mini" style="margin-top:6px">Os dados ficam guardados neste aparelho. Baixe uma cópia de vez em quando (ou ligue a sincronização abaixo) pra não perder nada se trocar de celular.</div>
     <div class="acoes" style="margin-top:10px"><button class="btn" onclick="baixarBackup()">Baixar cópia</button><label class="btn sec" style="margin:0">Restaurar cópia<input type="file" accept=".json" hidden onchange="restaurar(this.files[0])"></label></div></div>
@@ -753,7 +769,7 @@ TELAS.ajustes = () => `<div class="cab"><h1>Ajustes</h1></div>
     <div class="rodape"><button class="btn perigo" onclick="if(confirm('Apagar TODOS os dados deste aparelho?')&&confirm('Tem certeza mesmo?')){const c=S.config;S=novoEstado();S.config=c;salvar('Tudo apagado.')}">Apagar tudo</button></div></div>
   <div class="mini" style="text-align:center;margin:20px 0">Cris Gourmet · sistema de gestão</div>`;
 
-function baixarBackup(){ baixar(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),`backup-crisgourmet-${hoje()}.json`); }
+function baixarBackup(){ const c=JSON.parse(JSON.stringify(S)); c.config.syncUrl=''; c.config.syncSenha=''; baixar(new Blob([JSON.stringify(c,null,1)],{type:'application/json'}),`backup-crisgourmet-${hoje()}.json`); }
 function restaurar(file){ if(!file) return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); if(!d.encomendas||!d.insumos) throw 0; if(!confirm('Trocar os dados deste aparelho pela cópia?')) return; const c=S.config; S=d; if(!S.config.syncUrl) { S.config.syncUrl=c.syncUrl; S.config.syncSenha=c.syncSenha; } salvar('Cópia restaurada.'); }catch(e){ toast('Arquivo inválido.'); } }; r.readAsText(file); }
 
 /* ========= sincronização (Apps Script + Drive) ========= */
@@ -766,7 +782,8 @@ async function api(acao,extra){
 function agendarEnvio(){ if(!S.config.syncUrl) return; statusSync('vai','salvando…'); clearTimeout(timerEnvio); timerEnvio=setTimeout(enviar,1200); }
 async function enviar(){
   if(enviando){ agendarEnvio(); return; } enviando=true;
-  try{ const r=await api('salvar',{dados:JSON.stringify(S),atualizado:S.atualizado}); if(r&&r.ignorado){ enviando=false; return puxar(); } statusSync('ok','sincronizado'); }
+  try{ const copia=JSON.parse(JSON.stringify(S)); copia.config.syncUrl=''; copia.config.syncSenha='';
+    const r=await api('salvar',{dados:JSON.stringify(copia),atualizado:S.atualizado}); if(r&&r.ignorado){ enviando=false; return puxar(); } statusSync('ok','sincronizado'); }
   catch(e){ statusSync('erro','sem conexão'); }
   enviando=false;
 }
@@ -782,9 +799,90 @@ async function ligarSync(){
   S.config.syncUrl=$('#sU').value.trim(); S.config.syncSenha=$('#sS').value;
   if(!S.config.syncUrl) return toast('Cole o endereço.');
   try{ await api('ler'); localStorage.setItem(CHAVE,JSON.stringify(S)); toast('Conectado!'); await puxar(); render(); }
-  catch(e){ toast(e.message==='senha'?'Senha errada.':'Não conectou: confira o endereço.'); statusSync('erro','sem conexão'); }
+  catch(e){ toast(e.message==='senha'?'Senha errada.':e.message==='bloqueado'?'Muitas senhas erradas. O servidor travou por 15 minutos.':'Não conectou: confira o endereço.'); statusSync('erro','sem conexão'); }
 }
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) puxar(); });
+
+/* ========= PIN de acesso ========= */
+const TAM_PIN = 6, TRAVA_APOS_MIN = 5;
+const CH_TENT = 'crisgourmet.tentativas';
+let saiuEm = 0, ultimoToque = Date.now();
+async function hashPin(pin, sal){
+  const chave = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt:new TextEncoder().encode(sal), iterations:150000, hash:'SHA-256'}, chave, 256);
+  return [...new Uint8Array(bits)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function pinConfere(pin){ const p=S.config.pin; return !!p && await hashPin(pin,p.sal)===p.hash; }
+function tentativas(){ try{ return JSON.parse(localStorage.getItem(CH_TENT))||{n:0,ate:0}; }catch(e){ return {n:0,ate:0}; } }
+// Teclado de PIN. modo 'abrir' = tela de bloqueio; senão devolve o PIN digitado (ou null se cancelar).
+function teclado(titulo, sub, modo){
+  return new Promise(res=>{
+    const el=document.createElement('div'); el.className='trava';
+    el.innerHTML=`<img src="logo.jpg" alt=""><h2>${titulo}</h2><div class="mini">${sub||''}</div>
+      <div class="pontos">${'<i></i>'.repeat(TAM_PIN)}</div><div class="msg"></div>
+      <div class="teclado">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-n="${n}">${n}</button>`).join('')}
+      <button class="v" data-a="${modo==='abrir'?'esqueci':'cancelar'}">${modo==='abrir'?'Esqueci':'Cancelar'}</button><button data-n="0">0</button><button class="v" data-a="apagar">⌫</button></div>`;
+    document.body.appendChild(el);
+    let pin='', ocupado=false;
+    const pts=el.querySelectorAll('.pontos i'), msg=el.querySelector('.msg');
+    const pinta=()=>pts.forEach((p,i)=>p.classList.toggle('on',i<pin.length));
+    const fim=v=>{ el.remove(); document.removeEventListener('keydown',tecla); res(v); };
+    const espera=()=>{ const t=tentativas(), s=Math.ceil((t.ate-Date.now())/1000); if(s>0){ msg.textContent=`Muitas tentativas. Espere ${s} s.`; setTimeout(espera,1000); return true; } msg.textContent=''; return false; };
+    async function completo(){
+      if(modo!=='abrir') return fim(pin);
+      if(espera()){ pin=''; pinta(); return; }
+      ocupado=true;
+      const ok=await pinConfere(pin);
+      ocupado=false;
+      if(ok){ localStorage.removeItem(CH_TENT); return fim(pin); }
+      const t=tentativas(); t.n++; if(t.n>=5) t.ate=Date.now()+30000*Math.pow(2,t.n-5);
+      localStorage.setItem(CH_TENT,JSON.stringify(t));
+      pin=''; pinta(); if(!espera()) msg.textContent='PIN errado.';
+    }
+    function aperta(n,a){
+      if(ocupado) return;
+      if(a==='apagar'){ pin=pin.slice(0,-1); pinta(); return; }
+      if(a==='cancelar') return fim(null);
+      if(a==='esqueci') return esqueciPin();
+      if(n!=null && pin.length<TAM_PIN){ pin+=n; pinta(); if(pin.length===TAM_PIN) setTimeout(completo,120); }
+    }
+    el.querySelectorAll('.teclado button').forEach(b=>b.onclick=()=>aperta(b.dataset.n,b.dataset.a));
+    function tecla(e){ if(/^\d$/.test(e.key)) aperta(e.key); else if(e.key==='Backspace') aperta(null,'apagar'); else if(e.key==='Escape'&&modo!=='abrir') aperta(null,'cancelar'); }
+    document.addEventListener('keydown',tecla);
+    if(modo==='abrir') espera();
+  });
+}
+let travado=false;
+async function travar(){
+  if(!S.config.pin || travado) return;
+  travado=true; fechar(); document.body.classList.add('travado');
+  await teclado('Cris Gourmet','Digite seu PIN','abrir');
+  travado=false; ultimoToque=Date.now(); document.body.classList.remove('travado');
+}
+function esqueciPin(){
+  const sync=!!S.config.syncUrl;
+  if(!confirm('Sem o PIN, o único jeito é apagar os dados deste aparelho.\n\n'+(sync?'A sincronização está ligada: depois é só ligar de novo em Ajustes, com o endereço e a senha, que os dados voltam.':'ATENÇÃO: a sincronização não está ligada. Só volta o que estiver numa cópia de segurança baixada.')+'\n\nApagar os dados deste aparelho?')) return;
+  if(!confirm('Tem certeza? Isso não tem volta.')) return;
+  localStorage.removeItem(CHAVE); localStorage.removeItem(CH_TENT); location.reload();
+}
+async function criarPin(){
+  if(S.config.pin){ const atual=await teclado('PIN atual','Digite o PIN que você usa hoje'); if(atual==null) return; if(!await pinConfere(atual)) return toast('PIN errado.'); }
+  const a=await teclado('Novo PIN',`Escolha ${TAM_PIN} números`); if(a==null) return;
+  if(/^(\d)\1+$/.test(a) || '0123456789012'.includes(a) || '9876543210987'.includes(a)) return toast('PIN fácil demais. Evite 111111 ou 123456.');
+  const b=await teclado('Confirme o PIN','Digite de novo'); if(b==null) return;
+  if(a!==b) return toast('Os PINs não bateram. Tente de novo.');
+  const sal=uid()+uid();
+  S.config.pin={sal,hash:await hashPin(a,sal)};
+  salvar('PIN salvo. O sistema pede o PIN ao abrir.');
+}
+async function tirarPin(){
+  const atual=await teclado('PIN atual','Pra tirar o PIN, digite ele'); if(atual==null) return;
+  if(!await pinConfere(atual)) return toast('PIN errado.');
+  delete S.config.pin; salvar('PIN removido.');
+}
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) saiuEm=Date.now(); else if(saiuEm && Date.now()-saiuEm>TRAVA_APOS_MIN*60000) travar(); });
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>ultimoToque=Date.now(),true));
+setInterval(()=>{ if(!document.hidden && Date.now()-ultimoToque>10*60000) travar(); },30000);
 
 /* ========= roteador ========= */
 function render(){
@@ -801,6 +899,7 @@ function renderLista(){ // re-render sem perder o foco da busca
 }
 function irPara(){ rota=(location.hash||'#inicio').slice(1); fechar(); render(); window.scrollTo(0,0); }
 window.addEventListener('hashchange',irPara);
+travar();
 irPara();
 if(S.config.syncUrl) puxar();
 </script>
